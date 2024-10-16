@@ -26,7 +26,7 @@ def whois_lookup(ip):
 def nmap_scan(subnet="192.168.1.0/24"):
     output = run_command(f"nmap -sn {subnet}")  # Adjust to your subnet
     devices = parse_nmap_output(output)
-    return devices
+    return devices, output
 
 # Function to run ARP scan
 def arp_scan():
@@ -39,7 +39,6 @@ def arp_scan():
 
 # Function to test network performance using iperf
 def network_performance_test():
-    # Note: This requires iperf server to be running on the target
     target_ip = "192.168.1.2"  # Adjust this target IP
     return run_command(f"iperf3 -c {target_ip}")
 
@@ -76,17 +75,13 @@ def ip_address_management():
     return run_command("cat /etc/hosts")  # Show local IP address mappings
 
 # Function to export reports (simple text export)
-def export_reports(data):
-    with open("scan_report.txt", "w") as f:
+def export_reports(data, filename="scan_report.txt"):
+    with open(filename, "w") as f:
         f.write(data)
-
-# Function to automate scans
-def automated_scans():
-    return run_command("cron")  # Display cron jobs for automation
 
 # Function to perform Nmap scan and display results in the text box
 def perform_nmap_scan():
-    devices = nmap_scan()
+    devices, output = nmap_scan()
     output_text.delete(1.0, tk.END)  # Clear previous output
     output_text.insert(tk.END, "Devices found via Nmap:\n")
     for device in devices:
@@ -98,6 +93,9 @@ def perform_nmap_scan():
         whois_info = whois_lookup(device)
         output_text.insert(tk.END, f"WHOIS Info for {device}:\n{whois_info}\n")
 
+    # Export results to a file
+    export_reports(output, "nmap_scan_report.txt")
+
 # Function to perform ARP scan and display results in the text box
 def perform_arp_scan():
     output = arp_scan()
@@ -105,12 +103,18 @@ def perform_arp_scan():
     output_text.insert(tk.END, "ARP-scan results:\n")
     output_text.insert(tk.END, output)
 
+    # Export results to a file
+    export_reports(output, "arp_scan_report.txt")
+
 # Function to perform network performance test
 def perform_network_performance_test():
     output = network_performance_test()
     output_text.delete(1.0, tk.END)  # Clear previous output
     output_text.insert(tk.END, "Network Performance Test Results:\n")
     output_text.insert(tk.END, output)
+
+    # Export results to a file
+    export_reports(output, "network_performance_report.txt")
 
 # Function to perform ping test
 def perform_ping_test():
@@ -120,6 +124,9 @@ def perform_ping_test():
     output_text.insert(tk.END, f"Ping Test Results for {ip}:\n")
     output_text.insert(tk.END, output)
 
+    # Export results to a file
+    export_reports(output, "ping_test_report.txt")
+
 # Function to perform DNS lookup
 def perform_dns_lookup():
     domain = "example.com"  # Example domain, can be changed
@@ -128,12 +135,18 @@ def perform_dns_lookup():
     output_text.insert(tk.END, f"DNS Lookup Results for {domain}:\n")
     output_text.insert(tk.END, output)
 
+    # Export results to a file
+    export_reports(output, "dns_lookup_report.txt")
+
 # Function for packet sniffing
 def perform_packet_sniffing():
     output = packet_sniffing()
     output_text.delete(1.0, tk.END)  # Clear previous output
     output_text.insert(tk.END, "Packet Sniffing Results:\n")
     output_text.insert(tk.END, output)
+
+    # Export results to a file
+    export_reports(output, "packet_sniffing_report.txt")
 
 # Function to perform vulnerability scan
 def perform_vulnerability_scan():
@@ -143,12 +156,18 @@ def perform_vulnerability_scan():
     output_text.insert(tk.END, f"Vulnerability Scan Results for {ip}:\n")
     output_text.insert(tk.END, output)
 
+    # Export results to a file
+    export_reports(output, "vulnerability_scan_report.txt")
+
 # Function to create network map
 def perform_network_mapping():
     output = network_mapping()
     output_text.delete(1.0, tk.END)  # Clear previous output
     output_text.insert(tk.END, "Network Mapping Results:\n")
     output_text.insert(tk.END, output)
+
+    # Export results to a file
+    export_reports(output, "network_mapping_report.txt")
 
 # Function to perform Wi-Fi scan
 def perform_wifi_scan():
@@ -157,12 +176,18 @@ def perform_wifi_scan():
     output_text.insert(tk.END, "Wi-Fi Scan Results:\n")
     output_text.insert(tk.END, output)
 
+    # Export results to a file
+    export_reports(output, "wifi_scan_report.txt")
+
 # Function to perform malware scan
 def perform_malware_scan():
     output = malware_scan()
     output_text.delete(1.0, tk.END)  # Clear previous output
     output_text.insert(tk.END, "Malware Scan Results:\n")
     output_text.insert(tk.END, output)
+
+    # Export results to a file
+    export_reports(output, "malware_scan_report.txt")
 
 # Function to manage IP address
 def perform_ip_address_management():
@@ -171,10 +196,14 @@ def perform_ip_address_management():
     output_text.insert(tk.END, "IP Address Management:\n")
     output_text.insert(tk.END, output)
 
+    # Export results to a file
+    export_reports(output, "ip_address_management_report.txt")
+
 # Create the main window
 window = tk.Tk()
 window.title("Network Scanner Tool")
 window.configure(bg="#f0f0f0")  # Set background color
+window.minsize(800, 600)  # Set a minimum size for the window
 
 # Create a menu bar
 menu_bar = Menu(window)
@@ -193,16 +222,12 @@ scan_menu.add_command(label="Wi-Fi Scan", command=perform_wifi_scan)
 scan_menu.add_command(label="Malware Scan", command=perform_malware_scan)
 scan_menu.add_command(label="IP Address Management", command=perform_ip_address_management)
 
-menu_bar.add_cascade(label="Scans", menu=scan_menu)
+menu_bar.add_cascade(label="Scan", menu=scan_menu)
 window.config(menu=menu_bar)
 
-# Create a scrolled text box for output
-output_text = scrolledtext.ScrolledText(window, wrap=tk.WORD, bg="white", fg="#333333")
-output_text.grid(column=0, row=1, padx=10, pady=10, sticky='nsew')  # Sticky to expand in all directions
+# Create a ScrolledText widget for output display
+output_text = scrolledtext.ScrolledText(window, wrap=tk.WORD, bg="white", fg="black")
+output_text.pack(fill=tk.BOTH, expand=True)  # Make it scalable
 
-# Configure grid weights to allow for scaling
-window.grid_rowconfigure(1, weight=1)  # Allow the output text box to expand
-window.grid_columnconfigure(0, weight=1)  # Allow the column to expand
-
-# Run the application
+# Start the main event loop
 window.mainloop()
